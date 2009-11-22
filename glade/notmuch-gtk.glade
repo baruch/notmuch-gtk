@@ -5,6 +5,8 @@
   <object class="GtkWindow" id="main_window">
     <property name="title" translatable="yes">NotMuch GTK</property>
     <property name="role">NotMuch</property>
+    <property name="default_width">700</property>
+    <property name="default_height">500</property>
     <signal name="delete_event" handler="gtk_main_quit"/>
     <child>
       <object class="GtkVBox" id="vbox1">
@@ -25,14 +27,12 @@
             </child>
             <child>
               <object class="GtkButton" id="button_search">
-                <property name="label" translatable="yes">button</property>
+                <property name="label" translatable="yes">Search</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -64,5 +64,22 @@
       </object>
     </child>
   </object>
-  <object class="GtkListStore" id="list_threads"/>
+  <object class="GtkListStore" id="list_threads">
+    <columns>
+      <!-- column-name thread_id -->
+      <column type="gchararray"/>
+      <!-- column-name relative_date -->
+      <column type="gchararray"/>
+      <!-- column-name num_msgs -->
+      <column type="gint"/>
+      <!-- column-name total_msgs -->
+      <column type="gint"/>
+      <!-- column-name authors -->
+      <column type="gchararray"/>
+      <!-- column-name subject -->
+      <column type="gchararray"/>
+      <!-- column-name tags -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
 </interface>

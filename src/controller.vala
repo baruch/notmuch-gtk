@@ -45,6 +45,8 @@ namespace NotMuch {
 			this.child_stderr_stream = new DataInputStream(new GLib.UnixInputStream(child_stderr, true));
 			this.child_stdout_stream = new DataInputStream(new GLib.UnixInputStream(child_stdout, true));
 
+			this.view.clear_list();
+
 			handle_stderr.begin();
 			handle_stdout.begin();
 		}
@@ -98,7 +100,7 @@ namespace NotMuch {
 					string authors = match.fetch(5);
 					string subject = match.fetch(6);
 					string tags = match.fetch(7);
-					//debug("matched: %s/%s/%s/%s/%s/%s/%s", thread_id, relative_date, num_msgs, total_msgs, authors, subject, tags);
+					this.view.add_list(thread_id, relative_date, num_msgs.to_int(), total_msgs.to_int(), authors, subject, tags);
 				} catch (GLib.Error e) {
 					debug("Error reading stdout: %s", e.message);
 					break;
