@@ -4,9 +4,16 @@ namespace NotMuch {
 		private GLib.DataInputStream child_stderr_stream;
 		private GLib.Cancellable child_stderr_cancel;
 		private GLib.DataInputStream child_stdout_stream;
+		private GLib.Regex search_re;
 
 		construct {
 			this.child_stderr_cancel = new GLib.Cancellable();
+			try {
+				string search_re_str = """^([^ ]+) \s*(.+) \[([[:digit:]]+)/([[:digit:]]+)\] ([^;]*); (\C*) \((.*)\)\s*$""";
+				this.search_re = new Regex(search_re_str, RegexCompileFlags.OPTIMIZE|RegexCompileFlags.RAW, 0);
+			} catch (GLib.RegexError e) {
+				error("Failed to compile regex: %s", e.message);
+			}
 		}
 
 		public void set_view(View view) {
@@ -75,7 +82,23 @@ namespace NotMuch {
 					string line = yield this.child_stdout_stream.read_line_async(0, null, out len);
 					if (line == null)
 						break;
-					debug("STDOUT: %s", line);
+					//debug("STDOUT: %s", line);
+					MatchInfo match;
+					bool success = search_re.match(line, 0, out match);
+					if (!success || !match.matches()) {
+						debug("Failed to match line: %s", line);
+						continue;
+					}
+
+					assert(match.get_match_count() == 1 + 7);
+					string thread_id = match.fetch(1);
+					string relative_date = match.fetch(2);
+					string num_msgs = match.fetch(3);
+					string total_msgs = match.fetch(4);
+					string authors = match.fetch(5);
+					string subject = match.fetch(6);
+					string tags = match.fetch(7);
+					//debug("matched: %s/%s/%s/%s/%s/%s/%s", thread_id, relative_date, num_msgs, total_msgs, authors, subject, tags);
 				} catch (GLib.Error e) {
 					debug("Error reading stdout: %s", e.message);
 					break;
