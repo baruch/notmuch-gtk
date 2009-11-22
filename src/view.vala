@@ -26,8 +26,12 @@ namespace NotMuch {
 			this.search = this.builder.get_object("text_search") as Entry;
 			this.list = this.builder.get_object("list_threads") as ListStore;
 
+			// Handle the user clicking on the search button
 			var search_button = this.builder.get_object("button_search") as Button;
 			search_button.clicked.connect(this.on_search);
+
+			// Handle the case that the user just presses enter in the entry box
+			this.search.activate.connect(this.on_search);
 
 			var list_view = this.builder.get_object("threads_view") as TreeView;
 			list_view_col(list_view, "Date", 1);
