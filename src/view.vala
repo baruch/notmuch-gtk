@@ -9,9 +9,27 @@ namespace NotMuch {
 		private Gtk.ListStore list;
 		private weak Controller ctrl;
 
-		private void list_view_col(TreeView view, string title, int col) {
-			view.insert_column_with_attributes(-1, title, new CellRendererText(), "text", col, null);
+		private CellRendererText cell_ellipsize() {
+			var cell = new CellRendererText();
+			cell.ellipsize = Pango.EllipsizeMode.END;
+			cell.ellipsize_set = true;
+			cell.width_chars = 20;
+			return cell;
 		}
+
+		private CellRendererText cell_msgs() {
+			var cell = new CellRendererText();
+			cell.xalign = (float)0.5;
+			return cell;
+		}
+
+		private void list_view_col(TreeView view, string title, int col, CellRendererText? cell = null) {
+			var lcell = cell;
+			if (lcell == null)
+				lcell = new CellRendererText();
+			view.insert_column_with_attributes(-1, title, lcell, "text", col, null);
+		}
+
 		construct {
 			this.builder = new Builder();
 			try {
@@ -35,10 +53,17 @@ namespace NotMuch {
 
 			var list_view = this.builder.get_object("threads_view") as TreeView;
 			list_view_col(list_view, "Date", 1);
-			list_view_col(list_view, "Messages", 3);
-			list_view_col(list_view, "Authors", 4);
-			list_view_col(list_view, "Subject", 5);
-			list_view_col(list_view, "Tags", 6);
+			list_view_col(list_view, "Messages", 3, cell_msgs());
+			list_view_col(list_view, "Authors", 4, cell_ellipsize());
+			list_view_col(list_view, "Subject", 5, cell_ellipsize());
+			list_view_col(list_view, "Tags", 6, cell_ellipsize());
+
+			for (int i = 2; i < 5; i++) {
+				var col = list_view.get_column(i);
+				if (i == 3) // Expand the subject
+					col.expand = true;
+				col.resizable = true;
+			}
 		}
 
 		public View(Controller ctrl) {
