@@ -8,9 +8,9 @@ namespace NotMuch.Threads {
 		private Gtk.Entry search;
 		private Gtk.TreeView treeview;
 		private Gtk.ListStore list;
-		private weak Controller ctrl;
 
 		public signal void tag_threads();
+		public signal void start_search(string query);
 
 		private CellRendererText cell_ellipsize() {
 			var cell = new CellRendererText();
@@ -79,10 +79,6 @@ namespace NotMuch.Threads {
 
 		}
 
-		public View(Controller ctrl) {
-			this.ctrl = ctrl;
-		}
-
 		public void show() {
 			main.show_all();
 		}
@@ -93,7 +89,7 @@ namespace NotMuch.Threads {
 
 		public void on_search() {
 			string query = search.get_text();
-			ctrl.start_search(query);
+			this.start_search(query);
 		}
 
 		public void set_query(string query) {

@@ -15,14 +15,23 @@ namespace NotMuch.Threads {
 			} catch (GLib.RegexError e) {
 				error("Failed to compile regex: %s", e.message);
 			}
-		}
 
-		public void set_view(View view) {
-			this.view = view;
+			this.view = new View();
 			this.view.tag_threads.connect(this.do_tag_threads);
+			this.view.start_search.connect(this.start_search);
 		}
 
-		public void start_search(string query) {
+		private bool initial_search() {
+			this.start_search("tag:inbox and tag:unread");
+			return false;
+		}
+
+		public void begin() {
+			this.view.show();
+			Timeout.add_seconds(0, initial_search);
+		}
+
+		private void start_search(string query) {
 			this.view.set_query(query);
 
 			string[] argv = new string[4];
