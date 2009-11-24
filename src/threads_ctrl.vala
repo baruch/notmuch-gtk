@@ -5,7 +5,6 @@ namespace NotMuch.Threads {
 		private GLib.Cancellable child_stderr_cancel;
 		private GLib.DataInputStream child_stdout_stream;
 		private GLib.Regex search_re;
-		private NotMuch.Tag.Controller tag_ctrl;
 
 		construct {
 			this.child_stderr_cancel = new GLib.Cancellable();
@@ -17,8 +16,8 @@ namespace NotMuch.Threads {
 			}
 		}
 
-		public Controller(Gtk.Builder builder) {
-			this.view = new View(builder);
+		public Controller() {
+			this.view = new View();
 			this.view.tag_threads.connect(this.do_tag_threads);
 			this.view.start_search.connect(this.start_search);
 		}
@@ -141,9 +140,8 @@ namespace NotMuch.Threads {
 			debug("Selected some items");
 
 			// Start a controller for tagging
-			assert(this.tag_ctrl == null);
-			this.tag_ctrl = new NotMuch.Tag.Controller();
-			this.tag_ctrl.start(list);
+			var tag_ctrl = new NotMuch.Tag.Controller();
+			tag_ctrl.run(list);
 		}
 	}
 }

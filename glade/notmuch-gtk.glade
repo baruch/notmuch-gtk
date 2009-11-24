@@ -150,12 +150,13 @@
   </object>
   <object class="GtkDialog" id="dialog_tag">
     <property name="border_width">5</property>
-    <property name="type">popup</property>
     <property name="title" translatable="yes">Tag Selected Threads</property>
     <property name="role">TAG</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
-    <property name="type_hint">normal</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="transient_for">main_window</property>
     <property name="has_separator">False</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox1">
@@ -259,7 +260,6 @@
     </action-widgets>
   </object>
   <object class="GtkWindow" id="window_progress">
-    <property name="type">popup</property>
     <property name="title" translatable="yes">Tagging in Progress...</property>
     <property name="role">TAGPROGRESS</property>
     <property name="modal">True</property>

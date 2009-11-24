@@ -32,20 +32,20 @@ namespace NotMuch.Threads {
 			view.insert_column_with_attributes(-1, title, lcell, "text", col, null);
 		}
 
-		public View(Gtk.Builder builder) {
-			this.main = builder.get_object("main_window") as Window;
-			this.search = builder.get_object("text_search") as Entry;
-			this.list = builder.get_object("list_threads") as ListStore;
-			this.treeview = builder.get_object("threads_view") as TreeView;
+		public View() {
+			this.main = Global.builder.get_object("main_window") as Window;
+			this.search = Global.builder.get_object("text_search") as Entry;
+			this.list = Global.builder.get_object("list_threads") as ListStore;
+			this.treeview = Global.builder.get_object("threads_view") as TreeView;
 
 			// Handle the user clicking on the search button
-			var search_button = builder.get_object("button_search") as Button;
+			var search_button = Global.builder.get_object("button_search") as Button;
 			search_button.clicked.connect(this.on_search);
 
 			// Handle the case that the user just presses enter in the entry box
 			this.search.activate.connect(this.on_search);
 
-			var list_view = builder.get_object("threads_view") as TreeView;
+			var list_view = Global.builder.get_object("threads_view") as TreeView;
 			list_view_col(list_view, "Date", 1);
 			list_view_col(list_view, "Messages", 3, cell_msgs());
 			list_view_col(list_view, "Authors", 4, cell_ellipsize());
@@ -63,7 +63,7 @@ namespace NotMuch.Threads {
 			get_selected_threads().set_mode(Gtk.SelectionMode.MULTIPLE);
 
 			// Attach signals to actions
-			var action_tag = builder.get_object("action_tag") as Action;
+			var action_tag = Global.builder.get_object("action_tag") as Action;
 			assert(action_tag != null);
 			action_tag.activate.connect(this.on_tag);
 		}
