@@ -6,8 +6,11 @@ namespace NotMuch {
 		private Gtk.Builder builder;
 		private Gtk.Window main;
 		private Gtk.Entry search;
+		private Gtk.TreeView treeview;
 		private Gtk.ListStore list;
 		private weak Controller ctrl;
+
+		public signal void tag_threads();
 
 		private CellRendererText cell_ellipsize() {
 			var cell = new CellRendererText();
@@ -43,6 +46,7 @@ namespace NotMuch {
 			this.main = this.builder.get_object("main_window") as Window;
 			this.search = this.builder.get_object("text_search") as Entry;
 			this.list = this.builder.get_object("list_threads") as ListStore;
+			this.treeview = this.builder.get_object("threads_view") as TreeView;
 
 			// Handle the user clicking on the search button
 			var search_button = this.builder.get_object("button_search") as Button;
@@ -64,6 +68,15 @@ namespace NotMuch {
 					col.expand = true;
 				col.resizable = true;
 			}
+
+			// Mark tree selection to allow multiple selections
+			get_selected_threads().set_mode(Gtk.SelectionMode.MULTIPLE);
+
+			// Attach signals to actions
+			var action_tag = this.builder.get_object("action_tag") as Action;
+			assert(action_tag != null);
+			action_tag.activate.connect(this.on_tag);
+
 		}
 
 		public View(Controller ctrl) {
@@ -72,6 +85,10 @@ namespace NotMuch {
 
 		public void show() {
 			main.show_all();
+		}
+
+		public void on_tag() {
+			this.tag_threads();
 		}
 
 		public void on_search() {
@@ -91,6 +108,10 @@ namespace NotMuch {
 			TreeIter iter;
 			this.list.append(out iter);
 			this.list.set(iter, 0, thread_id, 1, relative_date, 2, num_msgs, 3, total_msgs, 4, authors, 5, subject, 6, tags, -1);
+		}
+
+		public Gtk.TreeSelection get_selected_threads() {
+			return this.treeview.get_selection();
 		}
 	}
 }

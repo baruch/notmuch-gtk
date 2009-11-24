@@ -1,10 +1,11 @@
 namespace NotMuch {
 	class Controller : GLib.Object {
-		private weak View view;
+		private View view;
 		private GLib.DataInputStream child_stderr_stream;
 		private GLib.Cancellable child_stderr_cancel;
 		private GLib.DataInputStream child_stdout_stream;
 		private GLib.Regex search_re;
+		private NotMuch.Ctrl.Tag tag_ctrl;
 
 		construct {
 			this.child_stderr_cancel = new GLib.Cancellable();
@@ -18,6 +19,7 @@ namespace NotMuch {
 
 		public void set_view(View view) {
 			this.view = view;
+			this.view.tag_threads.connect(this.do_tag_threads);
 		}
 
 		public void start_search(string query) {
@@ -114,6 +116,23 @@ namespace NotMuch {
 				debug("Error closing stdout: %s", e1.message);
 			}
 			this.child_stdout_stream = null;
+		}
+
+		private void do_tag_threads() {
+			debug("Do tag threads");
+			var selected = this.view.get_selected_threads();
+			var list = selected.get_selected_rows(null);
+			if (list == null) {
+				debug("Nothing is selected");
+				return;
+			}
+
+			debug("Selected some items");
+
+			// Start a controller for tagging
+			assert(this.tag_ctrl == null);
+			this.tag_ctrl = new NotMuch.Ctrl.Tag();
+			this.tag_ctrl.start(list);
 		}
 	}
 }
