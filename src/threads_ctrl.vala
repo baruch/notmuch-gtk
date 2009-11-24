@@ -1,11 +1,11 @@
-namespace NotMuch {
+namespace NotMuch.Threads {
 	class Controller : GLib.Object {
 		private View view;
 		private GLib.DataInputStream child_stderr_stream;
 		private GLib.Cancellable child_stderr_cancel;
 		private GLib.DataInputStream child_stdout_stream;
 		private GLib.Regex search_re;
-		private NotMuch.Ctrl.Tag tag_ctrl;
+		private NotMuch.Tag.Controller tag_ctrl;
 
 		construct {
 			this.child_stderr_cancel = new GLib.Cancellable();
@@ -131,7 +131,7 @@ namespace NotMuch {
 
 			// Start a controller for tagging
 			assert(this.tag_ctrl == null);
-			this.tag_ctrl = new NotMuch.Ctrl.Tag();
+			this.tag_ctrl = new NotMuch.Tag.Controller();
 			this.tag_ctrl.start(list);
 		}
 	}

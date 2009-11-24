@@ -2,8 +2,8 @@ public static int main(string[] args)
 {
 	Gtk.init(ref args);
 
-	var controller = new NotMuch.Controller();
-	var gui = new NotMuch.View(controller);
+	var controller = new NotMuch.Threads.Controller();
+	var gui = new NotMuch.Threads.View(controller);
 	controller.set_view(gui);
 
 	gui.show();

@@ -1,6 +1,6 @@
 using Gtk;
 
-namespace NotMuch {
+namespace NotMuch.Threads {
 
 	class View : GLib.Object {
 		private Gtk.Builder builder;
