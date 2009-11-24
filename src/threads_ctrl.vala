@@ -15,8 +15,10 @@ namespace NotMuch.Threads {
 			} catch (GLib.RegexError e) {
 				error("Failed to compile regex: %s", e.message);
 			}
+		}
 
-			this.view = new View();
+		public Controller(Gtk.Builder builder) {
+			this.view = new View(builder);
 			this.view.tag_threads.connect(this.do_tag_threads);
 			this.view.start_search.connect(this.start_search);
 		}
