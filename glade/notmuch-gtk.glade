@@ -2,6 +2,24 @@
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy project-wide -->
+  <object class="GtkListStore" id="list_threads">
+    <columns>
+      <!-- column-name thread_id -->
+      <column type="gchararray"/>
+      <!-- column-name relative_date -->
+      <column type="gchararray"/>
+      <!-- column-name num_msgs -->
+      <column type="gint"/>
+      <!-- column-name total_msgs -->
+      <column type="gint"/>
+      <!-- column-name authors -->
+      <column type="gchararray"/>
+      <!-- column-name subject -->
+      <column type="gchararray"/>
+      <!-- column-name tags -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkWindow" id="main_window">
     <property name="title" translatable="yes">NotMuch GTK</property>
     <property name="role">NotMuch</property>
@@ -48,6 +66,7 @@
                         <property name="visible">True</property>
                         <property name="use_action_appearance">True</property>
                         <property name="related_action">action_delete</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -56,7 +75,7 @@
                         <property name="visible">True</property>
                         <property name="use_action_appearance">True</property>
                         <property name="related_action">action_tag</property>
-                        <property name="image">image1</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -91,6 +110,7 @@
                 <property name="receives_default">True</property>
               </object>
               <packing>
+                <property name="expand">False</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -121,24 +141,6 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkListStore" id="list_threads">
-    <columns>
-      <!-- column-name thread_id -->
-      <column type="gchararray"/>
-      <!-- column-name relative_date -->
-      <column type="gchararray"/>
-      <!-- column-name num_msgs -->
-      <column type="gint"/>
-      <!-- column-name total_msgs -->
-      <column type="gint"/>
-      <!-- column-name authors -->
-      <column type="gchararray"/>
-      <!-- column-name subject -->
-      <column type="gchararray"/>
-      <!-- column-name tags -->
-      <column type="gchararray"/>
-    </columns>
   </object>
   <object class="GtkAction" id="action_tag">
     <property name="label">_Tag</property>
