@@ -52,7 +52,7 @@ namespace NotMuch.Exec {
 		}
 	}
 
-	public bool tag(string query, string[] add_tags, string[] remove_tags, out GLib.Pid pid, out int child_stdout, out int child_stderr) {
+	public bool tag(string query, string[] add_tags, string[] remove_tags, out GLib.Pid pid) {
 		string[] parts = query.split(" ");
 		int parts_count = count_array(parts);
 
@@ -66,6 +66,11 @@ namespace NotMuch.Exec {
 		add_array(parts, null, ref argv, ref argv_idx);
 		argv[argv_idx++] = null;
 
-		return do_exec(argv, out pid, out child_stdout, out child_stderr);
+		int child_stdout;
+		int child_stderr;
+		bool result = do_exec(argv, out pid, out child_stdout, out child_stderr);
+		Posix.close(child_stdout);
+		Posix.close(child_stderr);
+		return result;
 	}
 }

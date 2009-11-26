@@ -60,9 +60,7 @@ namespace NotMuch.TagProgress {
 			debug("thread id %s", val);
 
 			GLib.Pid pid;
-			int child_stdout;
-			int child_stderr;
-			success = NotMuch.Exec.tag(val, this.add_tags, this.remove_tags, out pid, out child_stdout, out child_stderr);
+			success = NotMuch.Exec.tag(val, this.add_tags, this.remove_tags, out pid);
 			if (!success) {
 				// We will try the next one soon enough
 				Idle.add(do_tag_thread);
