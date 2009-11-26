@@ -42,7 +42,7 @@ namespace NotMuch.Exec {
 		if (array == null)
 			return;
 
-		for (int i = 0; array[i] != null; i++) {
+		for (int i = 0; i < array.length; i++) {
 			string val;
 			if (prefix != null)
 				val = "%c%s".printf(prefix, array[i]);
