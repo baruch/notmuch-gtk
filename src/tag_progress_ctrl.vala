@@ -35,13 +35,7 @@ namespace NotMuch.TagProgress {
 			do_tag_thread();
 		}
 
-		private bool do_tag_thread() {
-			if (selection_list == null) {
-				debug("List is empty, finishing things");
-				end_tagging();
-				return false;
-			}
-
+		private string? get_thread_id() {
 			Gtk.TreePath path = selection_list.data;
 			selection_list.remove_link(selection_list);
 			this.count++;
@@ -52,15 +46,38 @@ namespace NotMuch.TagProgress {
 			if (!success) {
 				debug("Failed to get iterator from path, skipping");
 				Idle.add(do_tag_thread);
-				return false;
+				return null;
 			}
 
 			string val;
 			this.list.get(iter, 0, out val, -1);
 			debug("thread id %s", val);
 
+			return val;
+		}
+
+		private bool do_tag_thread() {
+			if (selection_list == null) {
+				debug("List is empty, finishing things");
+				end_tagging();
+				return false;
+			}
+
+			var query = new GLib.StringBuilder();
+			int i = 0;
+			while (i < 50 && selection_list != null) {
+				string? thread_id = get_thread_id();
+				if (thread_id == null)
+					continue;
+
+				if (i > 0)
+					query.append(" OR ");
+				query.append(thread_id);
+				i++;
+			}
+
 			GLib.Pid pid;
-			success = NotMuch.Exec.tag(val, this.add_tags, this.remove_tags, out pid);
+			bool success = NotMuch.Exec.tag(query.str, this.add_tags, this.remove_tags, out pid);
 			if (!success) {
 				// We will try the next one soon enough
 				Idle.add(do_tag_thread);
