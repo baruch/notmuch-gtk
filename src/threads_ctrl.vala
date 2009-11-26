@@ -35,25 +35,14 @@ namespace NotMuch.Threads {
 		private void start_search(string query) {
 			this.view.set_query(query);
 
-			string[] argv = new string[4];
-			argv[0] = "/usr/local/bin/notmuch";
-			argv[1] = "search";
-			argv[2] = query;
-			argv[3] = null;
-
 			int child_stdout;
 			int child_stderr;
-			try {
-				bool success = GLib.Process.spawn_async_with_pipes("/", argv, null, 0, null, null, null, out child_stdout, out child_stderr);
-				if (!success) {
-					debug("Failed to run notmuch");
-					return;
-				}
-			} catch (GLib.SpawnError e) {
-				debug("Error spawning notmuch: %s", e.message);
+			GLib.Pid pid;
+			bool success = NotMuch.Exec.search(query, out pid, out child_stdout, out child_stderr);
+			if (!success)
 				return;
-			}
 
+			ChildWatch.add(pid, (pid, status) => { debug("search process is done"); });
 			this.child_stderr_stream = new DataInputStream(new GLib.UnixInputStream(child_stderr, true));
 			this.child_stdout_stream = new DataInputStream(new GLib.UnixInputStream(child_stdout, true));
 

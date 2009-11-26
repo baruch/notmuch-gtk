@@ -259,17 +259,60 @@
       <action-widget response="0">button_ok</action-widget>
     </action-widgets>
   </object>
-  <object class="GtkWindow" id="window_progress">
+  <object class="GtkDialog" id="dialog_progress">
+    <property name="border_width">5</property>
     <property name="title" translatable="yes">Tagging in Progress...</property>
     <property name="role">TAGPROGRESS</property>
     <property name="modal">True</property>
-    <property name="destroy_with_parent">True</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">main_window</property>
-    <child>
-      <object class="GtkProgressBar" id="progressbar">
+    <property name="has_separator">False</property>
+    <child internal-child="vbox">
+      <object class="GtkVBox" id="dialog-vbox2">
         <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child>
+          <object class="GtkProgressBar" id="progressbar">
+            <property name="visible">True</property>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child internal-child="action_area">
+          <object class="GtkHButtonBox" id="dialog-action_area2">
+            <property name="visible">True</property>
+            <property name="layout_style">end</property>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_progress">
+                <property name="label">gtk-cancel</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
       </object>
     </child>
+    <action-widgets>
+      <action-widget response="0">button_progress</action-widget>
+    </action-widgets>
   </object>
 </interface>
