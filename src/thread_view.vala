@@ -10,10 +10,13 @@ namespace NotMuch.Thread {
 			this.window.delete_event.connect(this.window_deleted);
 			//this.window.wm_role = "THREAD_MSG";
 
+			var scrolled_window = new Gtk.ScrolledWindow(null, null);
+			this.window.add(scrolled_window);
+
 			this.text = new Gtk.TextView();
 			this.text.editable = false;
-			this.text.wrap_mode = Gtk.WrapMode.WORD_CHAR;
-			this.window.add(this.text);
+			//this.text.wrap_mode = Gtk.WrapMode.WORD_CHAR;
+			scrolled_window.add(this.text);
 
 			this.window.set_default_size(400,400);
 			this.window.show_all();
