@@ -5,6 +5,7 @@ namespace NotMuch.Threads {
 		private GLib.Cancellable child_stderr_cancel;
 		private GLib.DataInputStream child_stdout_stream;
 		private GLib.Regex search_re;
+		private GLib.List<NotMuch.Thread.Controller> thread_view_list;
 
 		construct {
 			this.child_stderr_cancel = new GLib.Cancellable();
@@ -20,6 +21,7 @@ namespace NotMuch.Threads {
 			this.view = new View();
 			this.view.tag_threads.connect(this.do_tag_threads);
 			this.view.start_search.connect(this.start_search);
+			this.view.thread_view.connect(this.thread_view);
 		}
 
 		private bool initial_search() {
@@ -131,6 +133,18 @@ namespace NotMuch.Threads {
 			// Start a controller for tagging
 			var tag_ctrl = new NotMuch.Tag.Controller();
 			tag_ctrl.run(list);
+		}
+
+		private void thread_view(string thread_id) {
+			debug("View thread %s", thread_id);
+			NotMuch.Thread.Controller thread_view = new NotMuch.Thread.Controller(thread_id);
+			thread_view.closed.connect(this.thread_view_closed);
+			thread_view_list.append(thread_view);
+		}
+
+		private void thread_view_closed(NotMuch.Thread.Controller thread_view) {
+			debug("viewed thread got closed");
+			thread_view_list.remove(thread_view);
 		}
 	}
 }

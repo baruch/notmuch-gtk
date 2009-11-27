@@ -79,6 +79,16 @@
                         <property name="use_stock">True</property>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="menuitem_view">
+                        <property name="label" translatable="yes">_View</property>
+                        <property name="visible">True</property>
+                        <property name="related_action">action_view</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image1</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
@@ -316,5 +326,12 @@
     <action-widgets>
       <action-widget response="0">button_progress</action-widget>
     </action-widgets>
+  </object>
+  <object class="GtkAction" id="action_view">
+    <property name="label">View</property>
+  </object>
+  <object class="GtkImage" id="image1">
+    <property name="visible">True</property>
+    <property name="stock">gtk-open</property>
   </object>
 </interface>

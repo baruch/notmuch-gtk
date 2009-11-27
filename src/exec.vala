@@ -73,4 +73,25 @@ namespace NotMuch.Exec {
 		Posix.close(child_stderr);
 		return result;
 	}
+
+	public bool thread_read(string query, out int child_stdout) {
+		string[] argv = new string[4];
+		argv[0] = "/usr/local/bin/notmuch";
+		argv[1] = "show";
+		argv[2] = query;
+		argv[3] = null;
+
+		int child_stderr;
+		GLib.Pid pid;
+		bool result = do_exec(argv, out pid, out child_stdout, out child_stderr);
+		if (result == true) {
+			Posix.close(child_stderr);
+			ChildWatch.add(pid, default_child_watch);
+		}
+		return result;
+	}
+
+	private void default_child_watch(GLib.Pid pid, int status) {
+		debug("Child watched died with status %d", status);
+	}
 }

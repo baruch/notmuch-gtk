@@ -9,6 +9,7 @@ namespace NotMuch.Threads {
 		private Gtk.ListStore list;
 
 		public signal void tag_threads();
+		public signal void thread_view(string thread_id);
 		public signal void start_search(string query);
 
 		private CellRendererText cell_ellipsize() {
@@ -66,10 +67,35 @@ namespace NotMuch.Threads {
 			var action_tag = Global.builder.get_object("action_tag") as Action;
 			assert(action_tag != null);
 			action_tag.activate.connect(this.on_tag);
+
+			var action_view = Global.builder.get_object("action_view") as Action;
+			assert(action_view != null);
+			action_view.activate.connect(this.on_view);
 		}
 
 		public void show() {
 			main.show_all();
+		}
+
+		public void on_view() {
+			// Get path of current cursor in the view
+			Gtk.TreePath path;
+			this.treeview.get_cursor(out path, null);
+
+			// Get Iterator from path
+			TreeIter iter;
+			bool found = this.list.get_iter(out iter, path);
+			if (!found) {
+				debug("Couldn't find an iterator for a path we just received, strange!");
+				return;
+			}
+
+			// Get thread id from iterator
+			string thread_id;
+			this.list.get(iter, 0, out thread_id, -1);
+
+			// Tell anyone who is interested of this request
+			this.thread_view(thread_id);
 		}
 
 		public void on_tag() {
