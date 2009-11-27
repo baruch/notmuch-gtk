@@ -71,17 +71,16 @@ namespace NotMuch.Threads {
 			var action_view = Global.builder.get_object("action_view") as Action;
 			assert(action_view != null);
 			action_view.activate.connect(this.on_view);
+
+			// Handle the user double clicking on a row to view message
+			this.treeview.row_activated.connect(this.row_activated);
 		}
 
 		public void show() {
 			main.show_all();
 		}
 
-		public void on_view() {
-			// Get path of current cursor in the view
-			Gtk.TreePath path;
-			this.treeview.get_cursor(out path, null);
-
+		private void view_path(Gtk.TreePath path) {
 			// Get Iterator from path
 			TreeIter iter;
 			bool found = this.list.get_iter(out iter, path);
@@ -96,6 +95,17 @@ namespace NotMuch.Threads {
 
 			// Tell anyone who is interested of this request
 			this.thread_view(thread_id);
+		}
+
+		public void on_view() {
+			// Get path of current cursor in the view
+			Gtk.TreePath path;
+			this.treeview.get_cursor(out path, null);
+			this.view_path(path);
+		}
+
+		private void row_activated(Gtk.TreePath path, Gtk.TreeViewColumn column) {
+			this.view_path(path);
 		}
 
 		public void on_tag() {
