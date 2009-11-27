@@ -109,16 +109,9 @@ namespace NotMuch.Exec {
 		}
 	}
 
-	private int count_array(string[] array) {
-		int count = 0;
-		while (array[count] != null)
-			count++;
-		return count;
-	}
-
 	public Executor search(string query) {
 		string[] parts = query.split(" ");
-		int count = count_array(parts);
+		int count = parts.length;
 		
 		string[] argv = new string[3+count];
 		argv[0] = "/usr/local/bin/notmuch";
