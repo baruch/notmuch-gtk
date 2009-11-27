@@ -1,14 +1,11 @@
 namespace NotMuch.Threads {
 	class Controller : GLib.Object {
 		private View view;
-		private GLib.DataInputStream child_stderr_stream;
-		private GLib.Cancellable child_stderr_cancel;
-		private GLib.DataInputStream child_stdout_stream;
 		private GLib.Regex search_re;
 		private GLib.List<NotMuch.Thread.Controller> thread_view_list;
+		private NotMuch.Exec.Executor notmuch;
 
 		construct {
-			this.child_stderr_cancel = new GLib.Cancellable();
 			try {
 				string search_re_str = """^([^ ]+) \s*(.+) \[([[:digit:]]+)/([[:digit:]]+)\] ([^;]*); (\C*) \((.*)\)\s*$""";
 				this.search_re = new Regex(search_re_str, RegexCompileFlags.OPTIMIZE|RegexCompileFlags.RAW, 0);
@@ -37,86 +34,32 @@ namespace NotMuch.Threads {
 		private void start_search(string query) {
 			this.view.set_query(query);
 
-			int child_stdout;
-			int child_stderr;
-			GLib.Pid pid;
-			bool success = NotMuch.Exec.search(query, out pid, out child_stdout, out child_stderr);
+			this.notmuch = NotMuch.Exec.search(query);
+			this.notmuch.stdout_line_read.connect(this.handle_stdout);
+			bool success = this.notmuch.exec();
 			if (!success)
 				return;
 
-			ChildWatch.add(pid, (pid, status) => { debug("search process is done"); });
-			this.child_stderr_stream = new DataInputStream(new GLib.UnixInputStream(child_stderr, true));
-			this.child_stdout_stream = new DataInputStream(new GLib.UnixInputStream(child_stdout, true));
-
 			this.view.clear_list();
-
-			handle_stderr.begin();
-			handle_stdout.begin();
 		}
 
-		private async void handle_stderr() {
-			while (true) {
-				if (this.child_stdout_stream == null)
-					return;
-
-				try {
-					size_t len;
-					string line = yield this.child_stderr_stream.read_line_async(0, this.child_stderr_cancel, out len);
-					if (line == null)
-						continue;
-
-					debug("STDERR: %s", line);
-				} catch (GLib.Error e) {
-					debug("Error reading stderr: %s", e.message);
-					break;
-				}
-
-				try {
-					this.child_stderr_stream.close(null);
-				} catch (GLib.Error e1) {
-					debug("Error closing stderr: %s", e1.message);
-				}
-				this.child_stderr_stream = null;
-			}
-		}
-
-		private async void handle_stdout() {
-			while (true) {
-				try {
-					size_t len;
-					string line = yield this.child_stdout_stream.read_line_async(0, null, out len);
-					if (line == null)
-						break;
-					//debug("STDOUT: %s", line);
-					MatchInfo match;
-					bool success = search_re.match(line, 0, out match);
-					if (!success || !match.matches()) {
-						debug("Failed to match line: %s", line);
-						continue;
-					}
-
-					assert(match.get_match_count() == 1 + 7);
-					string thread_id = match.fetch(1);
-					string relative_date = match.fetch(2);
-					string num_msgs = match.fetch(3);
-					string total_msgs = match.fetch(4);
-					string authors = match.fetch(5);
-					string subject = match.fetch(6);
-					string tags = match.fetch(7);
-					this.view.add_list(thread_id, relative_date, num_msgs.to_int(), total_msgs.to_int(), authors, subject, tags);
-				} catch (GLib.Error e) {
-					debug("Error reading stdout: %s", e.message);
-					break;
-				}
+		private void handle_stdout(string line) {
+			MatchInfo match;
+			bool success = search_re.match(line, 0, out match);
+			if (!success || !match.matches()) {
+				debug("Failed to match line: %s", line);
+				return;
 			}
 
-			this.child_stderr_cancel.cancel();
-			try {
-				this.child_stdout_stream.close(null);
-			} catch (GLib.Error e1) {
-				debug("Error closing stdout: %s", e1.message);
-			}
-			this.child_stdout_stream = null;
+			assert(match.get_match_count() == 1 + 7);
+			string thread_id = match.fetch(1);
+			string relative_date = match.fetch(2);
+			string num_msgs = match.fetch(3);
+			string total_msgs = match.fetch(4);
+			string authors = match.fetch(5);
+			string subject = match.fetch(6);
+			string tags = match.fetch(7);
+			this.view.add_list(thread_id, relative_date, num_msgs.to_int(), total_msgs.to_int(), authors, subject, tags);
 		}
 
 		private void do_tag_threads() {

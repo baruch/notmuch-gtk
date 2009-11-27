@@ -7,6 +7,7 @@ namespace NotMuch.TagProgress {
 		private int count;
 		string[] add_tags;
 		string[] remove_tags;
+		private NotMuch.Exec.Executor notmuch;
 
 		public void run(GLib.List<Gtk.TreePath> selection_list, string[] add_tags, string[] remove_tags) {
 			debug("Will now show progress to update tags");
@@ -18,7 +19,7 @@ namespace NotMuch.TagProgress {
 			this.add_tags = add_tags;
 			this.remove_tags = remove_tags;
 
-			Idle.add(do_tag_thread);
+			Idle.add(idle_do_tag_thread);
 
 			this.view = new View();
 			this.view.run();
@@ -26,13 +27,6 @@ namespace NotMuch.TagProgress {
 
 		private void end_tagging() {
 			this.view.done();
-		}
-
-		private void tag_process_done(GLib.Pid pid, int status) {
-			// Need to analyze what happened to the former process
-
-			// Start the next one
-			do_tag_thread();
 		}
 
 		private string? get_thread_id() {
@@ -45,7 +39,7 @@ namespace NotMuch.TagProgress {
 			bool success = this.list.get_iter(out iter, path);
 			if (!success) {
 				debug("Failed to get iterator from path, skipping");
-				Idle.add(do_tag_thread);
+				Idle.add(idle_do_tag_thread);
 				return null;
 			}
 
@@ -56,11 +50,16 @@ namespace NotMuch.TagProgress {
 			return val;
 		}
 
-		private bool do_tag_thread() {
+		private bool idle_do_tag_thread() {
+			do_tag_thread();
+			return false;
+		}
+
+		private void do_tag_thread() {
 			if (selection_list == null) {
 				debug("List is empty, finishing things");
 				end_tagging();
-				return false;
+				return;
 			}
 
 			var query = new GLib.StringBuilder();
@@ -76,15 +75,9 @@ namespace NotMuch.TagProgress {
 				i++;
 			}
 
-			GLib.Pid pid;
-			bool success = NotMuch.Exec.tag(query.str, this.add_tags, this.remove_tags, out pid);
-			if (!success) {
-				// We will try the next one soon enough
-				Idle.add(do_tag_thread);
-			} else {
-				ChildWatch.add(pid, tag_process_done);
-			}
-			return false;
+			this.notmuch = NotMuch.Exec.tag(query.str, this.add_tags, this.remove_tags);
+			this.notmuch.process_died.connect(do_tag_thread);
+			this.notmuch.exec();
 		}
 	}
 }
