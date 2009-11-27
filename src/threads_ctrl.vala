@@ -25,7 +25,7 @@ namespace NotMuch.Threads {
 		}
 
 		private bool initial_search() {
-			this.start_search("tag:inbox and tag:unread");
+			this.start_search("tag:inbox");
 			return false;
 		}
 
