@@ -96,7 +96,7 @@ namespace NotMuch.Thread {
 				Gtk.TreeIter? iter = null;
 				if (this.parse_depth > 0) {
 					debug("Parse depth is %d", this.parse_depth);
-					unowned GLib.List<Gtk.TreeIter?> cur = this.parse_thread.nth(this.parse_depth);
+					unowned GLib.List<Gtk.TreeIter?> cur = this.parse_thread.nth(this.parse_depth-1);
 					if (cur != null) {
 						debug("nth element found");
 						iter = cur.data;
