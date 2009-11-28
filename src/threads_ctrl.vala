@@ -4,6 +4,7 @@ namespace NotMuch.Threads {
 		private GLib.Regex search_re;
 		private GLib.List<NotMuch.Thread.Controller> thread_view_list;
 		private NotMuch.Exec.Executor notmuch;
+		private NotMuch.Background.Manager bg_ops;
 
 		construct {
 			try {
@@ -12,6 +13,8 @@ namespace NotMuch.Threads {
 			} catch (GLib.RegexError e) {
 				error("Failed to compile regex: %s", e.message);
 			}
+
+			this.bg_ops = new NotMuch.Background.Manager();
 		}
 
 		public Controller() {
@@ -83,6 +86,8 @@ namespace NotMuch.Threads {
 			NotMuch.Thread.Controller thread_view = new NotMuch.Thread.Controller(thread_id);
 			thread_view.closed.connect(this.thread_view_closed);
 			thread_view_list.append(thread_view);
+
+			this.bg_ops.remove_tag(thread_id, "unread");
 		}
 
 		private void thread_view_closed(NotMuch.Thread.Controller thread_view) {

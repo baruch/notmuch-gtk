@@ -56,7 +56,7 @@ namespace NotMuch.Exec {
 		private bool log_stdout;
 		private bool log_stderr;
 
-		public signal void process_died();
+		public signal void process_died(Executor self);
 		public signal void stdout_line_read(string line);
 		public signal void stderr_line_read(string line);
 
@@ -105,7 +105,7 @@ namespace NotMuch.Exec {
 		private void handle_process_died(GLib.Pid pid, int status) {
 			debug("Process died with status %d", status);
 			GLib.Process.close_pid(pid);
-			this.process_died();
+			this.process_died(this);
 		}
 	}
 
