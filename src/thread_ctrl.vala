@@ -77,83 +77,98 @@ namespace NotMuch.Thread {
 			return depth;
 		}
 
+		private void handle_code(string line) {
+			if (line.has_prefix("\fmessage{")) {
+				assert(this.parse_state == ParseState.START || this.parse_state == ParseState.INTERIM);
+				this.parse_state = ParseState.MESSAGE;
+				if (this.parse_builder == null)
+					this.parse_builder = new StringBuilder();
+				else
+					this.parse_builder.truncate(0);
+				this.parse_from = "Unknown";
+				this.parse_header = null;
+				this.parse_body = null;
+
+				this.parse_depth = extract_depth(line);
+			} else if (line.has_prefix("\fmessage}")) {
+				assert(this.parse_state == ParseState.MESSAGE);
+				this.parse_state = ParseState.INTERIM;
+				Gtk.TreeIter? iter = null;
+				if (this.parse_depth > 0) {
+					debug("Parse depth is %d", this.parse_depth);
+					unowned GLib.List<Gtk.TreeIter?> cur = this.parse_thread.nth(this.parse_depth);
+					if (cur != null) {
+						debug("nth element found");
+						iter = cur.data;
+						while (cur.next != null)
+							cur.remove_link(cur.next);
+					} else {
+						debug("nth element not found");
+					}
+				}
+				this.add_message(iter, this.parse_from, this.parse_header, this.parse_body);
+			} else if (line.has_prefix("\fheader{")) {
+				assert(this.parse_state == ParseState.MESSAGE);
+				this.parse_state = ParseState.HEADER;
+			} else if (line.has_prefix("\fheader}")) {
+				assert(this.parse_state == ParseState.HEADER);
+				this.parse_state = ParseState.MESSAGE;
+				this.parse_header = this.parse_builder.str.dup();
+				this.parse_builder.truncate(0);
+			} else if (line.has_prefix("\fbody{")) {
+				assert(this.parse_state == ParseState.MESSAGE);
+				this.parse_state = ParseState.BODY;
+			} else if (line.has_prefix("\fbody}")) {
+				assert(this.parse_state == ParseState.BODY);
+				this.parse_state = ParseState.MESSAGE;
+				this.parse_body = this.parse_builder.str.dup();
+				this.parse_builder.truncate(0);
+			} else if (line.has_prefix("\fpart{")) {
+				assert(this.parse_state == ParseState.BODY);
+				this.parse_state = ParseState.PART;
+			} else if (line.has_prefix("\fpart}")) {
+				assert(this.parse_state == ParseState.PART);
+				this.parse_state = ParseState.BODY;
+			} else {
+				debug("Unknown code: %s", line);
+			}
+		}
+
+		private void handle_body(string line) {
+			switch (this.parse_state) {
+				case ParseState.MESSAGE:
+				case ParseState.START:
+				case ParseState.INTERIM:
+					error("Shouldn't have content in this state");
+					break;
+
+				case ParseState.HEADER:
+					if (line.has_prefix("From: ")) {
+						this.parse_from = line.substring((long)"From: ".size());
+					}
+					this.parse_builder.append(line);
+					this.parse_builder.append("\n");
+					break;
+
+				case ParseState.BODY:
+				case ParseState.PART:
+					this.parse_builder.append(line);
+					this.parse_builder.append("\n");
+					break;
+			}
+		}
+
 		private void handle_stdout(string line) {
 			if (line.has_prefix("\f")) {
-				if (line.has_prefix("\fmessage{")) {
-					assert(this.parse_state == ParseState.START || this.parse_state == ParseState.INTERIM);
-					this.parse_state = ParseState.MESSAGE;
-					if (this.parse_builder == null)
-						this.parse_builder = new StringBuilder();
-					else
-						this.parse_builder.truncate(0);
-					this.parse_from = "Unknown";
-					this.parse_header = null;
-					this.parse_body = null;
-
-					this.parse_depth = extract_depth(line);
-				} else if (line.has_prefix("\fmessage}")) {
-					assert(this.parse_state == ParseState.MESSAGE);
-					this.parse_state = ParseState.INTERIM;
-					Gtk.TreeIter? iter = null;
-					if (this.parse_depth > 0) {
-						debug("Parse depth is %d", this.parse_depth);
-						unowned GLib.List<Gtk.TreeIter?> cur = this.parse_thread.nth(this.parse_depth);
-						if (cur != null) {
-							debug("nth element found");
-							iter = cur.data;
-							while (cur.next != null)
-								cur.remove_link(cur.next);
-						} else {
-							debug("nth element not found");
-						}
-					}
-					this.add_message(iter, this.parse_from, this.parse_header, this.parse_body);
-				} else if (line.has_prefix("\fheader{")) {
-					assert(this.parse_state == ParseState.MESSAGE);
-					this.parse_state = ParseState.HEADER;
-				} else if (line.has_prefix("\fheader}")) {
-					assert(this.parse_state == ParseState.HEADER);
-					this.parse_state = ParseState.MESSAGE;
-					this.parse_header = this.parse_builder.str.dup();
-					this.parse_builder.truncate(0);
-				} else if (line.has_prefix("\fbody{")) {
-					assert(this.parse_state == ParseState.MESSAGE);
-					this.parse_state = ParseState.BODY;
-				} else if (line.has_prefix("\fbody}")) {
-					assert(this.parse_state == ParseState.BODY);
-					this.parse_state = ParseState.MESSAGE;
-					this.parse_body = this.parse_builder.str.dup();
-					this.parse_builder.truncate(0);
-				} else if (line.has_prefix("\fpart{")) {
-					assert(this.parse_state == ParseState.BODY);
-					this.parse_state = ParseState.PART;
-				} else if (line.has_prefix("\fpart}")) {
-					assert(this.parse_state == ParseState.PART);
-					this.parse_state = ParseState.BODY;
-				} else {
-					debug("Unknown code: %s", line);
-				}
+				this.handle_code(line);
 			} else {
-				switch (this.parse_state) {
-					case ParseState.MESSAGE:
-					case ParseState.START:
-					case ParseState.INTERIM:
-						error("Shouldn't have content in this state");
-						break;
-
-					case ParseState.HEADER:
-						if (line.has_prefix("From: ")) {
-							this.parse_from = line.substring((long)"From: ".size());
-						}
-						this.parse_builder.append(line);
-						this.parse_builder.append("\n");
-						break;
-
-					case ParseState.BODY:
-					case ParseState.PART:
-						this.parse_builder.append(line);
-						this.parse_builder.append("\n");
-						break;
+				string code = line.rchr(-1, '\f');
+				if (code == null)
+					this.handle_body(line);
+				else {
+					string[] parts = line.split("\f", 2);
+					this.handle_body(parts[0]);
+					this.handle_code("\f" + parts[1]);
 				}
 			}
 		}
